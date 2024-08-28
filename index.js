@@ -3,8 +3,9 @@ const schedule = require('node-schedule');
 const fetch=require("node-fetch");
 const client = new Client({ intents: [GatewayIntentBits.Guilds,GatewayIntentBits.GuildMembers,GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent] });
 
-const MyChannelId="984726930689503255";
-// const userId="618625045769748482";
+// const MyChannelId="984726930689503255";
+const MyChannelId="1277918596781309967";
+const userId="618625045769748482";
 const UsersID=require("./user");
 
 let randomId=UsersID[Math.floor(Math.random()*UsersID.length)];
@@ -30,9 +31,9 @@ const UserPing=async()=>{
   try{
 const channel =await client.channels.fetch(MyChannelId);
    if(channel) {
-    const botMessage=await channel.send(`Hello <@${randomId}>`);
+    const botMessage=await channel.send(`Hello <@${userId}>`);
 setTimeout(() => {botMessage.delete();}, 30000);
-setTimeout(PlainMode,120000);
+// setTimeout(PlainMode,120000);
   }
       }catch(error){
         console.log("error");
@@ -43,7 +44,7 @@ setTimeout(PlainMode,120000);
 
 client.once('ready', async() => {
   console.log(`Logged in as ${client.user.tag}!`);
-  schedule.scheduleJob("57 24 * * *",SecretMode);
+  // schedule.scheduleJob("57 24 * * *",SecretMode);
   schedule.scheduleJob("0 0 * * *",UserPing);
 });
 
