@@ -101,4 +101,4 @@ client.on("messageCreate", message => {
   }
 });
 
-client.login("MTI3Nzk1NzQ4NjkwMDU0NzU5Ng.GxtjyQ.6uT5HO0-TYhyenFd48DF6FOwbgzGDMTYc5fSKc");
+client.login("Bot_TOken");
