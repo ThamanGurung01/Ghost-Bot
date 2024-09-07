@@ -1,88 +1,104 @@
-const { Client, GatewayIntentBits }=  require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
 const schedule = require('node-schedule');
-const fetch=require("node-fetch");
-const client = new Client({ intents: [GatewayIntentBits.Guilds,GatewayIntentBits.GuildMembers,GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent] });
+const fetch = require('node-fetch');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-const MyChannelId="984726930689503255";
-const UsersID=require("./user");
+const MyChannelId = "984726930689503255";
+const UsersID = require("./user");
 
-const SecretName= "Ghost";
-const SecretImageUrl="https://www.clipartmax.com/png/small/3-30793_creepy-discord-icon-logo-remix-by-treetoadart-discord-icon.png";
+const SecretName = "Ghost";
+const SecretImageUrl = "https://i.pinimg.com/originals/3f/c3/f8/3fc3f8d7c7d7f4e2db533dada36d5db4.jpg";
 
-const oldName="Test-1 Bot";
-const oldImageUrl="https://www.clipartmax.com/png/small/226-2261845_content-creator-influencer-relations-discord-icon-transparent-small.png";
+const oldName = "Test-1 Bot";
+const oldImageUrl = "https://logodownload.org/wp-content/uploads/2017/11/discord-logo-1-1.png";
 
+let isInSecretMode = false;
 
-const SecretMode=async()=>{
-  await client.user.setUsername(SecretName);
-  await client.user.setAvatar(SecretImageUrl);
+const SecretMode = async () => {
+  if (!isInSecretMode) {
+    try {
+      await client.user.setUsername(SecretName);
+      await client.user.setAvatar(SecretImageUrl);
+      isInSecretMode = true;
+      console.log('Switched to ghost mode.');
+    } catch (error) {
+      console.error('Error switching to ghost mode:', error);
     }
+  }
+};
 
-
- const PlainMode=async()=>{
+const PlainMode = async () => {
+  if (isInSecretMode) {
+    try {
       await client.user.setUsername(oldName);
       await client.user.setAvatar(oldImageUrl);
+      isInSecretMode = false;
+      console.log('Reverted to plain mode.');
+    } catch (error) {
+      console.error('Error reverting to plain mode:', error);
     }
-
-const UserPing=async()=>{
-  try{
-const channel =await client.channels.fetch(MyChannelId);
-let randomId=UsersID[Math.floor(Math.random()*UsersID.length)];
-   if(channel) {
-    const botMessage=await channel.send(`Hello <@${randomId}>`);
-setTimeout(() => {botMessage.delete();}, 60000);
-setTimeout(PlainMode,150000);
   }
-      }catch(error){
-        console.log("error");
-      }
-}
+};
 
+const UserPing = async () => {
+  try {
+    if (!isInSecretMode) {
+      await SecretMode();
+    }
+    let shuffledUsers = UsersID.sort(() => Math.random() - 0.5);
+    let randomId = shuffledUsers[0];
+    const channel = await client.channels.fetch(MyChannelId);
 
+    if (channel) {
+      const botMessage = await channel.send(`Hello <@${randomId}>`);
+      setTimeout(async () => {
+        await botMessage.delete();
+        console.log(`Message sent to <@${randomId}> and deleted.`);
+      }, 30000);
+      setTimeout(PlainMode, 120000);
+    }
+  } catch (error) {
+    console.error('Error in UserPing:', error);
+  }
+};
 
-client.once('ready', async() => {
+client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  schedule.scheduleJob("57 24 * * *",SecretMode);
-  schedule.scheduleJob("0 0 * * *",UserPing);
+  schedule.scheduleJob("57 24 * * *", async () => {
+    await SecretMode(); 
+  });
+  schedule.scheduleJob("15 14 * * *", UserPing);
 });
 
-
-//normal functions
-const sadWords=["sad","depressed", "unhappy","angry"];
-
-const encouragements=[
+// Normal functions
+const sadWords = ["sad", "depressed", "unhappy", "angry"];
+const encouragements = [
   "Cheer up!",
   "Hang in there",
-  "you are a great person/bot",
-]
+  "You are a great person/bot",
+];
 
-function getQuote(){
-  return fetch("https://zenquotes.io/api/random").then(res=>{
-    return res.json();
-  }).then(data=>{
-    return data[0]["q"] + " -" + data[0]["a"]
-  })
+function getQuote() {
+  return fetch("https://zenquotes.io/api/random")
+    .then(res => res.json())
+    .then(data => data[0]["q"] + " -" + data[0]["a"]);
 }
 
+client.on("messageCreate", message => {
+  if (message.author.bot) return;
 
-client.on("messageCreate",message=>{
-  if(message.author.bot) return;
-  if(message.content.toLowerCase().startsWith("hi")){
-    message.reply({
-      content: "Hi 😊😊"});
-  }else if(message.content.toLowerCase().startsWith("hello")){
-    message.reply({
-      content: "Hello 😊😊"});
-  }
-  if(message.content ==="$inspire"){
-    getQuote().then(quote=> message.reply(quote));
-  }
-
-  if(sadWords.some(word=>message.content.includes(word))){
-    const encouragement=encouragements[Math.floor(Math.random()*encouragements.length)]
+  if (message.content.toLowerCase().startsWith("hi")) {
+    message.reply({ content: "Hi 😊😊" });
+  } else if (message.content.toLowerCase().startsWith("hello")) {
+    message.reply({ content: "Hello 😊😊" });
+  } else if (message.content.toLowerCase().startsWith("binod is") || message.content.toLowerCase().startsWith("binod")) {
+    message.reply({ content: "Noob" });
+  } else if (message.content === "$inspire") {
+    getQuote().then(quote => message.reply(quote));
+  } else if (sadWords.some(word => message.content.includes(word))) {
+    const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
     message.reply(encouragement);
   }
-})
+});
 
-
-client.login("MTI3Nzk1NzQ4NjkwMDU0NzU5Ng.GMREza.sAWFuZZyB5yezN6ueaul-jPkUdOmdcBpeqBbIM");
+client.login("MTI3Nzk1NzQ4NjkwMDU0NzU5Ng.GxtjyQ.6uT5HO0-TYhyenFd48DF6FOwbgzGDMTYc5fSKc");
